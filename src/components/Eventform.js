@@ -283,6 +283,7 @@ const Eventform = () => {
               type="file"
               accept="image/*"
               name="poster"
+              value={eventData.link}
               onChange={handlePosterUpload}
             />
           </div>
