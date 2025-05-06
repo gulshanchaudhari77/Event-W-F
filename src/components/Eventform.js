@@ -179,7 +179,7 @@ const Eventform = () => {
     formData.append("image", file); // "image" must match the backend field name
 
     try {
-      const res = await axios.post("http://localhost:5000/api/v1/upload-image", formData, {
+      const res = await axios.post("https://event-wallah-backend.onrender.com/api/v1/upload-image", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
