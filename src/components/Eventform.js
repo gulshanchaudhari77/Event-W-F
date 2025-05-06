@@ -140,169 +140,84 @@
 
 
 import React, { useState } from "react";
-import { handleError } from "../utils";
+import { handleError, handleSuccess } from "../utils";
 import { ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { handleSuccess } from "../utils";
 import axios from "axios";
 
 const Eventform = () => {
-  const [eventData, seteventData] = useState({
+  const [eventData, setEventData] = useState({
     eventname: "",
     textarea: "",
     date: "",
-    link: "", // This will store the Cloudinary image URL
+    link: "", // Cloudinary image URL
   });
 
-  console.log(eventData);
   const token = localStorage.getItem("token");
-  console.log("token ", token);
-
   const navigate = useNavigate();
 
-  // Change handler to update form fields
-  function changeHandler(event) {
-    seteventData((prevFormData) => {
-      return {
-        ...prevFormData,
-        [event.target.name]: event.target.value,
-      };
-    });
-  }
+  // Handle change for form fields
+  const changeHandler = (event) => {
+    setEventData((prevData) => ({
+      ...prevData,
+      [event.target.name]: event.target.value,
+    }));
+  };
 
-  // Handle image upload and send the file to the backend
-  // const handlePosterUpload = async (e) => {
-  //   const file = e.target.files[0];
-  //   if (!file) return;
-
-  //   const formData = new FormData();
-  //   formData.append("image", file); // "image" must match the backend field name
-
-  //   try {
-  //     const res = await axios.post("https://event-wallah-backend.onrender.com/api/v1/upload-image", formData, {
-  //       headers: {
-  //         "Content-Type": "multipart/form-data",
-  //         Authorization: `Bearer ${token}`,
-  //       },
-  //     });
-
-  //     // Assuming the backend returns this key with the Cloudinary URL
-  //     const imageUrl = res.data.imageUrl; 
-  //     console.log("Uploaded Image URL:", imageUrl); // Log to check if the URL is received
-
-  //     seteventData((prev) => ({ ...prev, link: imageUrl }));
-  //     handleSuccess("Image uploaded successfully");
-  //   } catch (error) {
-  //     console.error("Image Upload Failed", error);
-  //     handleError("Image upload failed");
-  //   }
-  // };
-
-  
-
-  // Submit handler for the event form
-  // const submitHandler = async (event) => {
-  //   event.preventDefault();
-  //   console.log("finally printing the data", eventData);
-  //   console.log("finally printing the data", eventData);
-
-  //   // Debugging: Check if each field has a value
-  //   console.log("Event Name:", eventData.eventname);
-  //   console.log("Description:", eventData.textarea);
-  //   console.log("Date:", eventData.date);
-  //   console.log("Link (Image URL):", eventData.link);
-
-
-  //   // Validation (server-side validation can be applied as well)
-  //   if (!eventData.eventname || !eventData.date || !eventData.link || !eventData.textarea) {
-  //     return handleError("All fields are required!");
-  //   }
-
-  //   try {
-  //     const url = "https://event-wallah-backend.onrender.com/api/v1/event";
-
-  //     const response = await axios.post(url, eventData, {
-  //       headers: {
-  //         Authorization: `Bearer ${token}`,
-  //         "Content-Type": "application/json",
-  //       },
-  //     });
-  //     console.log("response ", response);
-
-  //     const { success, message, error } = response.data;
-  //     if (success) {
-  //       handleSuccess(message);
-  //       setTimeout(() => {
-  //         navigate("/dashboard", {
-  //           state: { eventData: response?.data?.response || eventData },
-  //         });
-  //       }, 1000);
-  //     }
-  //   } catch (error) {
-  //     console.log("Error ", error);
-  //     handleError(error);
-  //   }
-  // };
-
-
+  // Handle image upload
   const handlePosterUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-  
+
     const formData = new FormData();
-    formData.append("image", file); // "image" must match the backend field name
-  
+    formData.append("image", file); // Ensure this matches backend field name
+
     try {
-      const res = await axios.post("https://event-wallah-backend.onrender.com/api/v1/upload-image", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      const imageUrl = res.data.imageUrl; // Assuming the backend returns this key with the Cloudinary URL
-      console.log("Uploaded Image URL:", imageUrl); // Check if the URL is valid
-  
-      // Set the image URL to the link field in the state
-      seteventData((prev) => ({ ...prev, link: imageUrl }));
+      const res = await axios.post(
+        "https://event-wallah-backend.onrender.com/api/v1/upload-image",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const imageUrl = res.data.imageUrl; // Assuming the backend sends this key with the Cloudinary URL
+      console.log("Uploaded Image URL:", imageUrl);
+
+      setEventData((prev) => ({ ...prev, link: imageUrl }));
       handleSuccess("Image uploaded successfully");
     } catch (error) {
       console.error("Image Upload Failed", error);
       handleError("Image upload failed");
     }
   };
-  
 
-  
-  
+  // Submit form data
   const submitHandler = async (event) => {
     event.preventDefault();
-    console.log("finally printing the data", eventData);
-  
-    // Check if the link is properly set (i.e., the image was uploaded)
+
     if (!eventData.link) {
       return handleError("Please upload an image before submitting!");
     }
-  
-    // Validation: Check if all required fields are filled
+
+    // Validate form fields
     if (!eventData.eventname || !eventData.date || !eventData.textarea || !eventData.link) {
       return handleError("All fields are required!");
     }
-  
+
     try {
       const url = "https://event-wallah-backend.onrender.com/api/v1/event";
-  
-      // Send event data to the backend
       const response = await axios.post(url, eventData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-  
-      console.log("response ", response);
-  
-      const { success, message, error } = response.data;
+
+      const { success, message } = response.data;
       if (success) {
         handleSuccess(message);
         setTimeout(() => {
@@ -313,10 +228,9 @@ const Eventform = () => {
       }
     } catch (error) {
       console.log("Error ", error);
-      handleError(error);
+      handleError("Event creation failed");
     }
   };
-  
 
   return (
     <>
@@ -344,7 +258,7 @@ const Eventform = () => {
 
           <label htmlFor="">Event Description</label>
 
-          <div className="bg-transparent ">
+          <div className="bg-transparent">
             <textarea
               className="bg-transparent w-[340px] desc text-white"
               placeholder="Enter Description"
@@ -374,7 +288,7 @@ const Eventform = () => {
             />
           </div>
 
-          <button>Create Event</button>
+          <button type="submit">Create Event</button>
         </form>
         <ToastContainer />
       </div>
