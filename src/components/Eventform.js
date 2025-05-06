@@ -186,7 +186,10 @@ const Eventform = () => {
         },
       });
 
-      const imageUrl = res.data.imageUrl; // assuming the backend returns this key with the Cloudinary URL
+      // Assuming the backend returns this key with the Cloudinary URL
+      const imageUrl = res.data.imageUrl; 
+      console.log("Uploaded Image URL:", imageUrl); // Log to check if the URL is received
+
       seteventData((prev) => ({ ...prev, link: imageUrl }));
       handleSuccess("Image uploaded successfully");
     } catch (error) {
@@ -283,7 +286,6 @@ const Eventform = () => {
               type="file"
               accept="image/*"
               name="poster"
-              value={eventData.link}
               onChange={handlePosterUpload}
             />
           </div>
