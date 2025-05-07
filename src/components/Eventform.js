@@ -249,42 +249,35 @@
   
 
   import React, { useState } from "react";
-import axios from "axios";
+import { handleError, handleSuccess } from "../utils";
 import { ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { handleError, handleSuccess } from "../utils";
+import axios from "axios";
 
 const Eventform = () => {
-  const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-
-  const [poster, setPoster] = useState(null);
-  const [eventData, setEventData] = useState({
+  const [eventData, seteventData] = useState({
     eventname: "",
     textarea: "",
     date: "",
-    link: "", // Will hold uploaded image URL
+    link: "", // image URL
   });
 
-  const changeHandler = (e) => {
-    setEventData({
-      ...eventData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
 
-  const posterHandler = (e) => {
-    setPoster(e.target.files[0]);
-  };
+  function changeHandler(event) {
+    seteventData((prevFormData) => ({
+      ...prevFormData,
+      [event.target.name]: event.target.value,
+    }));
+  }
 
-  const uploadPoster = async () => {
-    if (!poster) {
-      handleError("Please select a poster image.");
-      return false;
-    }
+  const handlePosterUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
     const formData = new FormData();
-    formData.append("image", poster); // Must match backend field
+    formData.append("image", file);
 
     try {
       const res = await axios.post(
@@ -299,63 +292,51 @@ const Eventform = () => {
       );
 
       const imageUrl = res.data.imageUrl;
-      if (imageUrl) {
-        setEventData((prev) => ({ ...prev, link: imageUrl }));
-        handleSuccess("Image uploaded successfully.");
-        return true;
-      } else {
-        handleError("Image upload failed.");
-        return false;
-      }
-    } catch (err) {
-      console.error("Upload Error:", err);
-      handleError("Image upload failed.");
-      return false;
+      console.log("Uploaded Image URL:", imageUrl);
+
+      seteventData((prev) => ({ ...prev, link: imageUrl }));
+      handleSuccess("Image uploaded successfully");
+
+    } catch (error) {
+      console.error("Image Upload Failed", error);
+      handleError("Image upload failed");
     }
   };
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
+  const submitHandler = async (event) => {
+    event.preventDefault();
 
-    if (!eventData.eventname || !eventData.date || !eventData.textarea) {
-      return handleError("All fields are required.");
-    }
+    console.log("Submitting:", eventData);
 
-    // Upload image if not already uploaded
-    if (!eventData.link) {
-      const uploadSuccess = await uploadPoster();
-      if (!uploadSuccess) return;
+    if (!eventData.link) return handleError("Please upload an image!");
+
+    if (!eventData.eventname || !eventData.date || !eventData.textarea || !eventData.link) {
+      return handleError("All fields are required!");
     }
 
     try {
-      const res = await axios.post(
-        "https://event-wallah-backend.onrender.com/api/v1/event",
-        eventData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const url = "https://event-wallah-backend.onrender.com/api/v1/event";
+      const response = await axios.post(url, eventData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-      const { success, message } = res.data;
+      const { success, message } = response.data;
       if (success) {
         handleSuccess(message);
         setTimeout(() => {
           navigate("/dashboard", {
-            state: { eventData: res.data?.response || eventData },
+            state: { eventData: response?.data?.response || eventData },
           });
         }, 1000);
-      } else {
-        handleError("Event creation failed.");
       }
-    } catch (err) {
-      console.error("Submit Error:", err);
-      handleError("Event creation failed.");
+    } catch (error) {
+      console.log("Error ", error);
+      handleError(error);
     }
   };
-
   
  
   
