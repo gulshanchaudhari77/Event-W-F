@@ -1,55 +1,82 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { handleSuccess } from '../utils';
 
-const Navbar = ({isHome}) => {
-  const [loggedInUser,setloggedInUser]=useState("");
-  const navigate=useNavigate();
+const Navbar = ({ isHome }) => {
+  const [loggedInUser, setLoggedInUser] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
-  useEffect(()=>
-  {
-    setloggedInUser(localStorage.getItem("eventData"))
-  },[]);
+  useEffect(() => {
+    setLoggedInUser(localStorage.getItem("eventData"));
+  }, []);
 
-  const handlelogout=(e)=>
-  {
+  const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('loggedInUser');
-    
     handleSuccess("logged-out");
     setTimeout(() => {
-      navigate('/login')
+      navigate('/login');
     }, 1000);
-  }
+  };
+
   return (
-    <nav className=" p-2">
-      <div className=" mx-auto flex justify-between  items-center">
-        {/* Left side: Event Name */}
-         <a href='/home' className="text-white text-xl font-semibold p-5 ml-6 font-">
-          Event Name
+    <nav className="bg-black p-4 text-white">
+      <div className="mx-auto flex justify-between items-center max-w-7xl">
+        <a href="/home" className="text-xl font-semibold">
+          EventWalllh
         </a>
-        <Link/>
 
-        {/* Right side: Dashboard, Event Name, Logout */}
-        <div className=" flex space-x-4 p-5">
-            {!isHome &&(
-          <a href="/dashboard" className="text-white hover:bg-gray-700 px-3 py-2 rounded">
-            Dashboard
-          </a>)}
-         {!isHome &&(
-          <a href="/eventform" className="text-white hover:bg-gray-700 px-3 py-2 rounded">
-            Event Name
-          </a>
-         )}
-            
-           
-          <a href="#logo" onClick={handlelogout} className="text-white hover:bg-gray-700 px-3 py-2 rounded">
+        {/* Hamburger button */}
+        <button
+          className="sm:hidden text-xl focus:outline-none"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          {isOpen ? "✖" : "☰"}
+        </button>
+
+        {/* Desktop Menu */}
+        <div className="hidden sm:flex space-x-4 items-center">
+          {!isHome && (
+            <a href="/dashboard" className="hover:bg-gray-700 px-3 py-2 rounded">
+              Dashboard
+            </a>
+          )}
+          {!isHome && (
+            <a href="/eventform" className="hover:bg-gray-700 px-3 py-2 rounded">
+              Create Event
+            </a>
+          )}
+          <button
+            onClick={handleLogout}
+            className="hover:bg-gray-700 px-3 py-2 rounded"
+          >
             Logout
-          </a>
-
+          </button>
         </div>
-            
       </div>
+
+      {/* Mobile Menu */}
+      {isOpen && (
+        <div className="sm:hidden mt-2 flex flex-col space-y-2 px-4">
+          {!isHome && (
+            <a href="/dashboard" className="hover:bg-gray-700 px-3 py-2 rounded">
+              Dashboard
+            </a>
+          )}
+          {!isHome && (
+            <a href="/eventform" className="hover:bg-gray-700 px-3 py-2 rounded">
+              Create Event
+            </a>
+          )}
+          <button
+            onClick={handleLogout}
+            className="hover:bg-gray-700 px-3 py-2 rounded"
+          >
+            Logout
+          </button>
+        </div>
+      )}
     </nav>
   );
 };
