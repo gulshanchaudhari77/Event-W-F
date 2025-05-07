@@ -248,82 +248,96 @@
  
   
 
-  import React, { useState, useEffect } from "react";
-import { handleError, handleSuccess } from "../utils";
-import { ToastContainer } from "react-toastify";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-
-const Eventform = () => {
-
+  import React, { useState } from "react";
+  import { handleError, handleSuccess } from "../utils";
+  import { ToastContainer } from "react-toastify";
+  import { useNavigate } from "react-router-dom";
+  import axios from "axios";
+  
+  const Eventform = () => {
     const [image, setImage] = useState(null);
   
-  const [eventData, seteventData] = useState({
-    eventname: "",
-    textarea: "",
-    date: "",
-    image: "", // Image URL
-  });
-
-  const imageHandler = (e) => {
-    setImage(e.target.files[0]);
-  };
-
-  const token = localStorage.getItem("token");
-  const navigate = useNavigate();
-
-  // For input field change
-  const changeHandler = (event) => {
-    seteventData((prev) => ({
-      ...prev,
-      [event.target.name]: event.target.value,
-    }));
-  };
-
- // ✅ Submit form and handle image upload within the same function
-const submitHandler = async (event) => {
-  event.preventDefault();
-
-  const { eventname, textarea, date, link } = eventData;
-
-  // Check if an image is uploaded first
-  if (!eventData.link) {
-    // Image upload part
-    const file = event.target.image.files[0];
-    if (!file) {
-      handleError("Please upload an image before submitting!");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("image", file);
-
-    try {
-      // Upload the image
-      const res = await axios.post(
-        "https://event-wallah-backend.onrender.com/api/v1/upload-image",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      // Check if the image upload is successful
-      if (res.data.success) {
-        const imageUrl = res.data.imageUrl;
-        seteventData((prev) => ({ ...prev, link: imageUrl }));
-        handleSuccess("Image uploaded successfully");
-
-        // Now submit the form with the uploaded image link
-        if (!eventname || !date || !textarea || !imageUrl) {
-          handleError("All fields are required!");
+    const [eventData, seteventData] = useState({
+      eventname: "",
+      textarea: "",
+      date: "",
+      link: "", // stores image URL after upload
+    });
+  
+    const token = localStorage.getItem("token");
+    const navigate = useNavigate();
+  
+    // Handle text field change
+    const changeHandler = (event) => {
+      seteventData((prev) => ({
+        ...prev,
+        [event.target.name]: event.target.value,
+      }));
+    };
+  
+    // Handle image selection
+    const imageHandler = (e) => {
+      setImage(e.target.files[0]);
+    };
+  
+    // Submit handler
+    const submitHandler = async (event) => {
+      event.preventDefault();
+  
+      const { eventname, textarea, date, link } = eventData;
+  
+      // Upload image if not already uploaded
+      if (!link) {
+        if (!image) {
+          handleError("Please upload an image before submitting!");
           return;
         }
-
-        // Submit event data
+  
+        const formData = new FormData();
+        formData.append("image", image);
+  
+        try {
+          const res = await axios.post(
+            "https://event-wallah-backend.onrender.com/api/v1/upload-image",
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+  
+          if (res.data.success) {
+            const imageUrl = res.data.imageUrl;
+            seteventData((prev) => ({ ...prev, link: imageUrl }));
+            handleSuccess("Image uploaded successfully");
+  
+            // Delay to allow state update, then re-trigger submission
+            setTimeout(() => {
+              submitHandler(event); // Retry submission with uploaded image
+            }, 500);
+  
+            return;
+          } else {
+            handleError("Image upload failed");
+            return;
+          }
+        } catch (error) {
+          console.error("Image Upload Error:", error);
+          handleError("Image upload failed");
+          return;
+        }
+      }
+  
+      // Validate form fields
+      if (!eventname || !date || !textarea || !link) {
+        handleError("All fields are required!");
+        return;
+      }
+  
+      // Submit event data
+      try {
         const url = "https://event-wallah-backend.onrender.com/api/v1/event";
         const response = await axios.post(url, eventData, {
           headers: {
@@ -331,7 +345,7 @@ const submitHandler = async (event) => {
             "Content-Type": "application/json",
           },
         });
-
+  
         const { success, message } = response.data;
         if (success) {
           handleSuccess(message);
@@ -341,109 +355,82 @@ const submitHandler = async (event) => {
             });
           }, 1000);
         }
-      } else {
-        handleError("Image upload failed");
+      } catch (error) {
+        console.log("Submit Error", error);
+        handleError("An error occurred while submitting the event");
       }
-    } catch (error) {
-      console.error("Error during image upload", error);
-      handleError("Image upload failed");
-    }
-  } else {
-    // If image already uploaded, submit directly
-    if (!eventname || !date || !textarea || !link) {
-      return handleError("All fields are required!");
-    }
-
-    try {
-      const url = "https://event-wallah-backend.onrender.com/api/v1/event";
-      const response = await axios.post(url, eventData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      const { success, message } = response.data;
-      if (success) {
-        handleSuccess(message);
-        setTimeout(() => {
-          navigate("/dashboard", {
-            state: { eventData: response?.data?.response || eventData },
-          });
-        }, 1000);
-      }
-    } catch (error) {
-      console.log("Submit Error", error);
-      handleError("An error occurred while submitting the event");
-    }
-  }
-};
-
- 
+    };
   
-
-  return (
-    <>
-      <div className="container bg-transparent px-20 py-6 rounded-lg max-w-[500px] shadow-lg shadow-gray-900 m-auto">
-        <video autoPlay muted loop className="video-background">
-          <source
-            src="https://videos.pexels.com/video-files/2611250/2611250-uhd_2560_1440_30fps.mp4"
-            type="video/mp4"
-          />
-          Your browser does not support the video tag.
-        </video>
-        <form onSubmit={submitHandler}>
-          <h1>Create Event</h1>
-
-          <div>
-            <label htmlFor="">Event Name</label>
-            <input
-              type="text"
-              placeholder="Enter event name"
-              value={eventData.eventname}
-              name="eventname"
-              onChange={changeHandler}
+    return (
+      <>
+        <div className="container bg-transparent px-20 py-6 rounded-lg max-w-[500px] shadow-lg shadow-gray-900 m-auto">
+          <video autoPlay muted loop className="video-background">
+            <source
+              src="https://videos.pexels.com/video-files/2611250/2611250-uhd_2560_1440_30fps.mp4"
+              type="video/mp4"
             />
-          </div>
-
-          <label htmlFor="">Event Description</label>
-
-          <div className="bg-transparent ">
-            <textarea
-              className="bg-transparent w-[340px] desc text-white"
-              placeholder="Enter Description"
-              value={eventData.textarea}
-              name="textarea"
-              onChange={changeHandler}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="">Date</label>
-            <input
-              type="date"
-              value={eventData.date}
-              name="date"
-              onChange={changeHandler}
-            />
-          </div>
-
-          <div>
-            <label htmlFor="">Event Poster (Image)</label>
-            <input
-              type="file"
-              accept="image/*"
-              name="poster"
-              onChange={imageHandler}
-            />
-          </div>
-
-          <button type="submit" onClick={submitHandler} >Create Event</button>
-        </form>
-        <ToastContainer />
-      </div>
-    </>
-  );
-};
-
-export default Eventform;
+            Your browser does not support the video tag.
+          </video>
+          <form onSubmit={submitHandler}>
+            <h1 className="text-white text-xl font-semibold mb-4">Create Event</h1>
+  
+            <div>
+              <label className="text-white">Event Name</label>
+              <input
+                type="text"
+                placeholder="Enter event name"
+                value={eventData.eventname}
+                name="eventname"
+                onChange={changeHandler}
+                className="w-full p-2 rounded bg-white mb-4"
+              />
+            </div>
+  
+            <div>
+              <label className="text-white">Event Description</label>
+              <textarea
+                className="bg-white w-full p-2 rounded mb-4"
+                placeholder="Enter Description"
+                value={eventData.textarea}
+                name="textarea"
+                onChange={changeHandler}
+              />
+            </div>
+  
+            <div>
+              <label className="text-white">Date</label>
+              <input
+                type="date"
+                value={eventData.date}
+                name="date"
+                onChange={changeHandler}
+                className="w-full p-2 rounded bg-white mb-4"
+              />
+            </div>
+  
+            <div>
+              <label className="text-white">Event Poster (Image)</label>
+              <input
+                type="file"
+                accept="image/*"
+                name="poster"
+                onChange={imageHandler}
+                className="w-full p-2 rounded bg-white mb-4"
+              />
+            </div>
+  
+            <button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
+            >
+              Create Event
+            </button>
+          </form>
+          <ToastContainer />
+        </div>
+      </>
+    );
+  };
+  
+  export default Eventform;
+  
