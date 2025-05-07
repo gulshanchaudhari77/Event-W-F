@@ -309,7 +309,7 @@ const Eventform = () => {
 
     const { eventname, textarea, date, link } = eventData;
 
-    if (!link) return handleError("Please upload an image before submitting!");
+    if (!eventData.link) return handleError("Please upload an image before submitting!");
     if (!eventname || !date || !textarea || !link)
       return handleError("All fields are required!");
 
