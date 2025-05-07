@@ -79,45 +79,52 @@ const Login = ({user}) => {
 
     
   return (
-    <div className='containerlogin'>
-      <video autoPlay muted loop className="video-background">
-        <source src="https://videos.pexels.com/video-files/2611250/2611250-uhd_2560_1440_30fps.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
-    <div className= 'container bg-transparent px-20 py-6 rounded-lg max-w-[500px] shadow-lg shadow-gray-900  flex justify-center'>
-        
-       <form onSubmit={submitHandler}  >
-
-       <h1 className='text-6xl mb-10 font-bold text-white'>Log-iN</h1>
-        
-        <div>
-            <label htmlFor="" className='text-white'>Email</label>
-            <input type="text"
-             placeholder='enter name'
-              name='email' 
-              onChange={changehandler}
-              value={formData.email}
- />
+    <div className='min-h-screen flex flex-col items-center justify-center relative px-4'>
+    <video autoPlay muted loop className="absolute top-0 left-0 w-full h-full object-cover z-[-1]">
+      <source src="https://videos.pexels.com/video-files/2611250/2611250-uhd_2560_1440_30fps.mp4" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+  
+    <div className='bg-black bg-opacity-70 backdrop-blur-md w-full max-w-sm rounded-lg px-6 py-8 shadow-lg'>
+      <form onSubmit={submitHandler}>
+        <h1 className='text-4xl md:text-6xl mb-8 font-bold text-white text-center'>Log-iN</h1>
+  
+        <div className='mb-4'>
+          <label className='block text-white mb-1'>Email</label>
+          <input
+            type="text"
+            placeholder='Enter email'
+            name='email'
+            onChange={changehandler}
+            value={formData.email}
+            className='w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500'
+          />
         </div>
-        <div>
-            <label htmlFor="" className='text-white'>Password</label>
-            <input type="password" 
-            placeholder='enter your password'
-             name='password'              
-             onChange={changehandler}
-             value={formData.password}
- />
+  
+        <div className='mb-4'>
+          <label className='block text-white mb-1'>Password</label>
+          <input
+            type="password"
+            placeholder='Enter your password'
+            name='password'
+            onChange={changehandler}
+            value={formData.password}
+            className='w-full px-3 py-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500'
+          />
         </div>
-        <div className='text-center bg-black mt-4 outline-white'>
-        <button className='text-center'>LOGIN</button> <br />
-
+  
+        <div className='text-center mt-6'>
+          <button className='bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700 transition'>LOGIN</button>
         </div>
-        <span className='text-white'>already have an account ? <Link to='/signup' className='text-white font-bold text-blue-500'>signup</Link> </span>
-       </form>
-       <ToastContainer/>
-        
+  
+        <p className='text-white text-center mt-4'>
+          Don’t have an account? <Link to='/signup' className='text-blue-400 font-bold'>Signup</Link>
+        </p>
+      </form>
+      <ToastContainer />
     </div>
-    </div>
+  </div>
+  
   )
 }
 
