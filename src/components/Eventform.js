@@ -249,135 +249,129 @@
   
 
   import React, { useState } from "react";
-  import { handleError, handleSuccess } from "../utils";
-  import { ToastContainer } from "react-toastify";
-  import { useNavigate } from "react-router-dom";
-  import axios from "axios";
-  
-  const Eventform = () => {
-    const [image, setImage] = useState(null);
-  
-    const [eventData, seteventData] = useState({
-      eventname: "",
-      textarea: "",
-      date: "",
-      link: "", // stores image URL after upload
-    });
-  
-    const token = localStorage.getItem("token");
-    const navigate = useNavigate();
-  
-    // Handle text field change
-    const changeHandler = (event) => {
-      seteventData((prev) => ({
-        ...prev,
-        [event.target.name]: event.target.value,
-      }));
-    };
-  
-    // Handle image selection
-    const imageHandler = (e) => {
-      setImage(e.target.files[0]);
-    };
-  
-    // Submit handler
-    const submitHandler = async (event) => {
-      event.preventDefault();
-    
-      console.log("🔄 Form submitted");
-    
-      const file = event.target.image?.files?.[0]; // From file input
-      const { eventname, textarea, date } = eventData;
-    
-      // Step 1: Validate required fields
-      if (!eventname || !date || !textarea) {
-        console.log("❌ Missing form fields");
-        handleError("All fields are required!");
-        return;
-      }
-    
-      let imageUrl = eventData.link; // existing image link
-      console.log("📷 Initial imageUrl from state:", imageUrl);
-    
-      // Step 2: Upload image if not uploaded already
-      if (!imageUrl && file) {
-        const formData = new FormData();
-        formData.append("image", file);
-    
-        console.log("⬆️ Uploading image...");
-    
-        try {
-          const res = await axios.post(
-            "https://event-wallah-backend.onrender.com/api/v1/upload-image",
-            formData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-    
-          imageUrl = res.data.imageUrl;
-          console.log("✅ Image uploaded:", imageUrl);
-          handleSuccess("Image uploaded successfully");
-        } catch (error) {
-          console.error("❌ Image upload failed", error);
-          handleError("Image upload failed");
-          return;
-        }
-      }
-    
-      if (!imageUrl && file)
-        {
-        console.log("❌ No image URL after upload");
-        handleError("Please upload an image before submitting!");
-        return;
-      }
-    
-      // Step 3: Submit the form
-      const updatedEventData = {
-        eventname,
-        textarea,
-        date,
-        link: imageUrl,
-      };
-    
-      console.log("📦 Submitting event:", updatedEventData);
-    
+import { handleError, handleSuccess } from "../utils";
+import { ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const Eventform = () => {
+  const [image, setImage] = useState(null);
+
+  const [eventData, seteventData] = useState({
+    eventname: "",
+    textarea: "",
+    date: "",
+    link: "", // image URL will go here
+  });
+
+  const token = localStorage.getItem("token");
+  const navigate = useNavigate();
+
+  const changeHandler = (event) => {
+    seteventData((prev) => ({
+      ...prev,
+      [event.target.name]: event.target.value,
+    }));
+  };
+
+  const imageHandler = (e) => {
+    setImage(e.target.files[0]);
+  };
+
+  const submitHandler = async (event) => {
+    event.preventDefault();
+    console.log("🔄 Form submitted");
+
+    const file = event.target.poster?.files?.[0]; // name="poster" in input
+    const { eventname, textarea, date } = eventData;
+
+    if (!eventname || !date || !textarea) {
+      handleError("All fields are required!");
+      return;
+    }
+
+    let imageUrl = eventData.link;
+    console.log("📷 Initial imageUrl from state:", imageUrl);
+
+    // 🔼 Upload image if not already uploaded
+    if (!imageUrl && file) {
+      const formData = new FormData();
+      formData.append("image", file);
+
       try {
-        const response = await axios.post(
-          "https://event-wallah-backend.onrender.com/api/v1/event",
-          updatedEventData,
+        const res = await axios.post(
+          "https://event-wallah-backend.onrender.com/api/v1/upload-image",
+          formData,
           {
             headers: {
+              "Content-Type": "multipart/form-data",
               Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
             },
           }
         );
-    
-        const { success, message } = response.data;
-        console.log("📨 Backend response:", response.data);
-    
-        if (success) {
-          handleSuccess(message);
-          console.log("✅ Event added. Redirecting to /dashboard...");
-          setTimeout(() => {
-            navigate("/dashboard", {
-              state: { eventData: response?.data?.response || updatedEventData },
-            });
-          }, 1000);
-        } else {
-          console.log("⚠️ Event creation failed:", response.data);
-          handleError("Failed to create event");
+
+        console.log("🛠️ Full image upload response:", res.data);
+
+        // ✅ Try to extract image URL
+        imageUrl = res.data.imageUrl || res.data.url || res.data.data?.url;
+
+        if (!imageUrl) {
+          handleError("Image upload failed — invalid response from server.");
+          return;
         }
+
+        handleSuccess("Image uploaded successfully");
+        console.log("✅ Image uploaded:", imageUrl);
       } catch (error) {
-        console.log("❌ Submit error", error);
-        handleError("Event submission failed");
+        console.error("❌ Image upload failed", error);
+        handleError("Image upload failed");
+        return;
       }
+    }
+
+    if (!imageUrl) {
+      handleError("Please upload an image before submitting!");
+      return;
+    }
+
+    const updatedEventData = {
+      eventname,
+      textarea,
+      date,
+      link: imageUrl,
     };
-    
+
+    try {
+      const response = await axios.post(
+        "https://event-wallah-backend.onrender.com/api/v1/event",
+        updatedEventData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const { success, message } = response.data;
+      console.log("📨 Backend response:", response.data);
+
+      if (success) {
+        handleSuccess(message);
+        console.log("✅ Event added. Redirecting...");
+        setTimeout(() => {
+          navigate("/dashboard", {
+            state: { eventData: response?.data?.response || updatedEventData },
+          });
+        }, 1000);
+      } else {
+        handleError("Failed to create event");
+      }
+    } catch (error) {
+      console.log("❌ Submit error", error);
+      handleError("Event submission failed");
+    }
+  };
   
     return (
       <>
