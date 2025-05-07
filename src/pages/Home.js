@@ -171,31 +171,32 @@ import gsap from 'gsap';
 
 const Home = () => {
   useGSAP(() => {
-    gsap.to("h1", {
-      x: 250,
-      duration: 2,
-      delay: 1
+    gsap.to(".hero-title", {
+      x: 0,
+      duration: 1.5,
+      delay: 0.5,
+      opacity: 1
     });
   });
 
   return (
-    <div className='relative w-full h-screen overflow-hidden'>
+    <div className='relative w-full min-h-screen overflow-hidden'>
       <video autoPlay muted loop className="absolute top-0 left-0 w-full h-full object-cover">
         <source src="https://videos.pexels.com/video-files/2611250/2611250-uhd_2560_1440_30fps.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
-      <div className='relative z-10 flex flex-col items-center justify-center h-full p-4 text-center text-white bg-black/50'>
-        <h1 className='text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif p-4'>
-          Hey Lets Create Event with <br />
-          <span className='text-orange-900'>EventWalllh !</span>
+      <div className='relative z-10 flex flex-col items-center justify-center min-h-screen px-4 text-center text-white bg-black/60'>
+        <h1 className='hero-title opacity-0 text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-serif leading-snug mb-8'>
+          Hey, Let's Create Events with <br />
+          <span className='text-orange-500'>EventWalllh!</span>
         </h1>
 
-        <div className='mt-6 flex flex-col sm:flex-row gap-4 items-center justify-center'>
-          <a href="/signup" className='text-2xl sm:text-3xl px-6 py-2 bg-orange-700 rounded-md hover:bg-orange-800 transition'>
+        <div className='flex flex-col sm:flex-row gap-4 items-center justify-center'>
+          <a href="/signup" className='text-xl sm:text-2xl px-6 py-2 bg-orange-700 rounded-md hover:bg-orange-800 transition'>
             Register
           </a>
-          <a href="/login" className='text-2xl sm:text-3xl px-6 py-2 bg-gray-700 rounded-md hover:bg-gray-800 transition'>
+          <a href="/login" className='text-xl sm:text-2xl px-6 py-2 bg-gray-700 rounded-md hover:bg-gray-800 transition'>
             Login
           </a>
         </div>
