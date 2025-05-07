@@ -227,7 +227,7 @@ const Dashboard = ({ isHome }) => {
 
   return (
     <>
-      <video autoPlay muted loop className="video-background">
+      <video autoPlay muted loop className="video-background fixed -z-10 w-full h-full object-cover">
         <source
           src="https://videos.pexels.com/video-files/2611250/2611250-uhd_2560_1440_30fps.mp4"
           type="video/mp4"
@@ -235,21 +235,23 @@ const Dashboard = ({ isHome }) => {
         Your browser does not support the video tag.
       </video>
 
-      <h1 className="text-center mb-6 text-5xl text-white font-bold">
+      <h1 className="text-center mb-6 text-3xl sm:text-4xl md:text-5xl text-white font-bold mt-4">
         ALL-User-Data
       </h1>
 
       <div className="flex justify-center mb-4">
         <Link to="/eventform">
-          <button className="btn">Let's Create Event</button>
+          <button className="btn px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition duration-200">
+            Let's Create Event
+          </button>
         </Link>
       </div>
 
-      <div className="flex justify-center gap-4 mb-6">
+      <div className="flex flex-wrap justify-center gap-2 sm:gap-4 mb-6 px-4">
         {["all", "upcoming", "ongoing", "completed"].map((tab) => (
           <button
             key={tab}
-            className={`py-2 px-4 rounded-lg text-white font-semibold ${
+            className={`py-2 px-3 sm:px-4 rounded-lg text-white font-semibold text-sm sm:text-base ${
               activeTab === tab ? "bg-blue-600" : "bg-gray-500"
             }`}
             onClick={() => setActiveTab(tab)}
@@ -259,7 +261,7 @@ const Dashboard = ({ isHome }) => {
         ))}
       </div>
 
-      <div className="flex justify-center gap-7 flex-wrap">
+      <div className="flex justify-center gap-4 sm:gap-6 flex-wrap px-2 sm:px-6 mb-10">
         {displayEvents.length > 0 ? (
           displayEvents.map((ele) => (
             <div
@@ -267,26 +269,28 @@ const Dashboard = ({ isHome }) => {
                 navigate("/eventDetails", { state: { eventData: ele } })
               }
               key={ele._id}
-              className="max-h-[400px] max-w-[300px] p-2 mt-4 shadow-lg shadow-white rounded-lg flex-wrap outline-white bashbox"
+              className="w-full sm:w-[250px] md:w-[280px] lg:w-[300px] bg-black bg-opacity-40 p-3 sm:p-4 rounded-lg hover:scale-105 transition-transform duration-200 cursor-pointer shadow-lg shadow-white"
             >
               <img
                 src={ele.link}
                 alt={`${ele.eventname}-event`}
-                className="w-full h-[200px] object-cover rounded-lg outline-white"
+                className="w-full h-[180px] sm:h-[200px] object-cover rounded-md mb-3"
               />
-              <h1 className="mt-2">
-                <span className="text-blue-400">Event-Name: </span>
-                <span className="text-white">{ele.eventname}</span>
+              <h1 className="text-white text-lg font-semibold">
+                <span className="text-blue-400">Event: </span>
+                {ele.eventname}
               </h1>
-              <p className="mt-4 text-blue-400">Date: {ele.date}</p>
-              <p className="mt-4 text-blue-400">Desc: {ele.textarea}</p>
-              <p className="mt-3 text-blue-400">
+              <p className="text-blue-300 text-sm mt-1">Date: {ele.date}</p>
+              <p className="text-blue-300 text-sm mt-1">Desc: {ele.textarea}</p>
+              <p className="text-blue-300 text-sm mt-1">
                 Registered Users: {ele?.user.length}
               </p>
             </div>
           ))
         ) : (
-          <p className="text-white">No events in this category</p>
+          <p className="text-white text-center text-lg">
+            No events in this category
+          </p>
         )}
       </div>
     </>
