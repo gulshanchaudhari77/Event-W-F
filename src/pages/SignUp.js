@@ -1,139 +1,125 @@
 import React, { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import {ToastContainer} from "react-toastify"
+import { ToastContainer } from "react-toastify"
 import { handleError, handleSuccess } from '../utils';
-import img from '../assets/istockphoto-1303877287-612x612.jpg'
 
 const SignUp = () => {
+  const [formData, setFormData] = useState({
+    name: " ",
+    password: "",
+    email: "",
+  });
 
+  const navigate = useNavigate();
 
-    const[formData,setFormData]=useState(
-        {name:" ",
-          password:"",
-        email:"",
-        
+  function changehandler(event) {
+    setFormData(prevFormData => {
+      return {
+        ...prevFormData,
+        [event.target.name]: event.target.value
+      }
+    });
+  }
+
+  const submitHandler = async (event) => {
+    event.preventDefault();
+
+    const { name, email, password } = formData;
+    if (!name || !email || !password) {
+      return handleError('name, email and password are required')
+    }
+
+    try {
+      const url = 'https://event-wallah-backend.onrender.com/api/v1/signup'
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
       });
-      console.log(formData)
 
-      const navigate=useNavigate();
-    
-      function changehandler(event){
-        setFormData(prevFormData=>{
-          return{
-            ...prevFormData,
-            [event.target.name]:event.target.value
-          }
-        });
-        
+      const result = await response.json();
+      const { success, message, error } = result;
+      if (success) {
+        handleSuccess(message);
+        setTimeout(() => {
+          navigate('/login')
+        }, 1000)
+      } else if (error) {
+        const details = error?.details[0].message;
+        handleError(details);
+      } else if (!success) {
+        handleError(message);
       }
+    } catch (err) {
+      handleError(err);
+    }
+  }
 
-      const submitHandler = async(event)=>{
-        event.preventDefault();
-        console.log("finally prinitting the data");
-        console.log(formData)
-
-        //server side validTION KR LIYE BHAI
-
-        const { name, email, password } = formData;
-        if (!name || !email || !password) {
-            return handleError('name, email and password are required')
-        }
-        try {
-          // const url = 'http://localhost:5000/api/v1/signup'
-          const url = 'https://event-wallah-backend.onrender.com/api/v1/signup'
-
-                 const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            });
-            const result = await response.json();
-            const { success, message, error } = result;
-            if (success) {
-                handleSuccess(message);
-                setTimeout(() => {
-                    navigate('/login')
-                }, 1000)
-            } else if (error) {
-                const details = error?.details[0].message;
-                handleError(details);
-            } else if (!success) {
-                handleError(message);
-            }
-            console.log(result);
-
-
-            
-        } catch (err) {
-            handleError(err);
-        }
-    
-      }
-    
-      
-
-
-    
   return (
-    <div className=' flex h-full w-full justify-center'>
+    <div className='relative flex justify-center items-center min-h-screen bg-black overflow-hidden'>
 
-<video autoPlay muted loop className="video-background">
+      <video autoPlay muted loop className="absolute top-0 left-0 w-full h-full object-cover z-0">
         <source src="https://videos.pexels.com/video-files/2611250/2611250-uhd_2560_1440_30fps.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
-      {/* <div className='bg-red  h-[50%] w-50%]'>
-        <img src={img} alt="" />
+      <div className='relative z-10 w-full max-w-md bg-black/70 backdrop-blur-md p-4 sm:p-8 rounded-lg shadow-lg'>
+        <form onSubmit={submitHandler}>
+          <h1 className='text-4xl sm:text-6xl mb-8 font-bold text-white text-center'>Sign-Up</h1>
 
-      </div> */}
+          <div className="mb-4">
+            <label className='text-white block mb-1'>Name</label>
+            <input
+              type="text"
+              placeholder='Enter name'
+              name='name'
+              onChange={changehandler}
+              value={formData.name}
+              className='w-full px-3 py-2 rounded bg-white/80 focus:outline-none'
+            />
+          </div>
 
-      <div className= 'container bg-transparent px-20 py-6 rounded-lg max-w-[500px] shadow-lg'>
-        
-       <form onSubmit={submitHandler}  >
-
-       <h1 className='text-6xl mb-10 font-bold text-white'>Sign-Up</h1>
-        <div >
-            <label htmlFor="" className='text-white'>Name</label>
-            <input type="text" 
-            placeholder='enter name'
-             name='name'
-             onChange={changehandler}
-             value={formData.name}
-              />
-        </div>
-        <div>
-            <label htmlFor="" className='text-white'>Email</label>
-            <input type="text"
-             placeholder='enter name'
-              name='email' 
+          <div className="mb-4">
+            <label className='text-white block mb-1'>Email</label>
+            <input
+              type="text"
+              placeholder='Enter email'
+              name='email'
               onChange={changehandler}
               value={formData.email}
- />
-        </div>
-        <div>
-            <label htmlFor="" className='text-white'>Password</label>
-            <input type="password" 
-            placeholder='enter your password'
-             name='password'              
-             onChange={changehandler}
-             value={formData.password}
- />
-        </div>
-        <div className='text-center mt-5'>
-        <button>Sign-Up</button> <br />
+              className='w-full px-3 py-2 rounded bg-white/80 focus:outline-none'
+            />
+          </div>
 
-        </div>
-        <span className='text-white'>already have an account ? <Link to='/login' className='text-blue-400 font-bold'>Login</Link> </span>
-       </form>
-       <ToastContainer/>
-        
-    </div>
+          <div className="mb-6">
+            <label className='text-white block mb-1'>Password</label>
+            <input
+              type="password"
+              placeholder='Enter your password'
+              name='password'
+              onChange={changehandler}
+              value={formData.password}
+              className='w-full px-3 py-2 rounded bg-white/80 focus:outline-none'
+            />
+          </div>
+
+          <div className='text-center mb-4'>
+            <button className='bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded transition-all'>
+              Sign-Up
+            </button>
+          </div>
+
+          <p className='text-white text-center'>
+            Already have an account? <Link to='/login' className='text-blue-400 font-bold'>Login</Link>
+          </p>
+        </form>
+
+        <ToastContainer />
+      </div>
     </div>
   )
 }
 
 export default SignUp
-
-
