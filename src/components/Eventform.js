@@ -290,10 +290,16 @@ const Eventform = () => {
             "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`,
           },
+          
         }
+
+        
       );
+      console.log("response.data", response.data);
+
 
       const imageUrl = res.data.imageUrl;
+      console.log("image ur".imageUrl)
       seteventData((prev) => ({ ...prev, link: imageUrl }));
       handleSuccess("Image uploaded successfully");
       console.log(seteventData)
