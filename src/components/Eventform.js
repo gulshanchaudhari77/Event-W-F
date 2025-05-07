@@ -248,7 +248,7 @@
  
   
 
-  import React, { useState } from "react";
+  import React, { useState, useEffect } from "react";
 import { handleError, handleSuccess } from "../utils";
 import { ToastContainer } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -259,32 +259,30 @@ const Eventform = () => {
     eventname: "",
     textarea: "",
     date: "",
+    link: "", // Image URL
   });
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
-  function changeHandler(e) {
+  // For input field change
+  const changeHandler = (event) => {
     seteventData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [event.target.name]: event.target.value,
     }));
-  }
+  };
 
-  // This will handle image upload and form submission
-  const submitHandler = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return handleError("Please select an image");
-
-    if (!eventData.eventname || !eventData.textarea || !eventData.date) {
-      return handleError("Please fill all event details first");
-    }
+  // ✅ Upload image and store the URL in state
+  const handlePosterUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
     const formData = new FormData();
     formData.append("image", file);
 
     try {
-      const uploadRes = await axios.post(
+      const res = await axios.post(
         "https://event-wallah-backend.onrender.com/api/v1/upload-image",
         formData,
         {
@@ -295,40 +293,56 @@ const Eventform = () => {
         }
       );
 
-      const imageUrl = uploadRes.data.imageUrl;
-      console.log("Image Uploaded:", imageUrl);
+      const imageUrl = res.data.imageUrl;
+      seteventData((prev) => ({ ...prev, link: imageUrl }));
+      handleSuccess("Image uploaded successfully");
+    } catch (error) {
+      console.error("Image Upload Failed", error);
+      handleError("Image upload failed");
+    }
+  };
 
-      // Submit the full event with image link
-      const finalData = {
-        ...eventData,
-        link: imageUrl,
-      };
+  // ✅ Form submission
+  const submitHandler = async (event) => {
+    event.preventDefault();
 
-      const res = await axios.post(
-        "https://event-wallah-backend.onrender.com/api/v1/event",
-        finalData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+    const { eventname, textarea, date, link } = eventData;
 
-      const { success, message } = res.data;
+    if (!link) return handleError("Please upload an image before submitting!");
+    if (!eventname || !date || !textarea || !link)
+      return handleError("All fields are required!");
+
+    try {
+      const url = "https://event-wallah-backend.onrender.com/api/v1/event";
+      const response = await axios.post(url, eventData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const { success, message } = response.data;
       if (success) {
         handleSuccess(message);
         setTimeout(() => {
           navigate("/dashboard", {
-            state: { eventData: res?.data?.response || finalData },
+            state: { eventData: response?.data?.response || eventData },
           });
         }, 1000);
       }
     } catch (error) {
-      console.error("Error during upload or submission", error);
-      handleError("Failed to upload or submit");
+      console.log("Submit Error", error);
+      handleError(error);
     }
   };
+
+  // Optional: Log when image is stored in state
+  useEffect(() => {
+    if (eventData.link) {
+      console.log("Image URL saved in state:", eventData.link);
+    }
+  }, [eventData.link]);
+
   
  
   
