@@ -296,6 +296,7 @@ const Eventform = () => {
       const imageUrl = res.data.imageUrl;
       seteventData((prev) => ({ ...prev, link: imageUrl }));
       handleSuccess("Image uploaded successfully");
+      console.log(seteventData)
     } catch (error) {
       console.error("Image Upload Failed", error);
       handleError("Image upload failed");
@@ -403,7 +404,7 @@ const Eventform = () => {
             />
           </div>
 
-          <button>Create Event</button>
+          <button type="submit" disabled={!eventData.link}>Create Event</button>
         </form>
         <ToastContainer />
       </div>
