@@ -164,56 +164,44 @@
 // // export default CreateEvent
 
 
-import React from 'react'
-import homeimg from '../assets/2176762-e1679757558326-1600x1480.jpg'
-import Footer from '../components/Footer'
-import { useGSAP } from '@gsap/react'
-import gsap from 'gsap'
-
+import React from 'react';
+import Footer from '../components/Footer';
+import { useGSAP } from '@gsap/react';
+import gsap from 'gsap';
 
 const Home = () => {
-  
-  useGSAP(()=>{
-    gsap.to("h1",{
-      x:250,
-      duration:2,
-      delay:1
+  useGSAP(() => {
+    gsap.to("h1", {
+      x: 250,
+      duration: 2,
+      delay: 1
+    });
+  });
 
-    })
-
-  })
-
-  
   return (
-    <div className=' video-container" '>
-       <video autoPlay muted loop className="video-background">
+    <div className='relative w-full h-screen overflow-hidden'>
+      <video autoPlay muted loop className="absolute top-0 left-0 w-full h-full object-cover">
         <source src="https://videos.pexels.com/video-files/2611250/2611250-uhd_2560_1440_30fps.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
-    
-      <div className=' home text-center h-full leading-3  p-20'>
-        <h1 className='text-6xl text-gray-200 flex  p-[100px] font-serif'>Hey Lets Create Event with   <br /><span className='text-6xl text-orange-900'>EventWalllh !</span> </h1>
 
+      <div className='relative z-10 flex flex-col items-center justify-center h-full p-4 text-center text-white bg-black/50'>
+        <h1 className='text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif p-4'>
+          Hey Lets Create Event with <br />
+          <span className='text-orange-900'>EventWalllh !</span>
+        </h1>
 
-        <div className=' text-center mt-7 flex gap-5 justify-center flex-wrap'>
-      <a  href="/signup" className=' button text-5xl mt-5'>Regester</a>
-      <a  href="/login" className=' button text-5xl mt-5'>login</a>
-
-
-    </div>
-
-
+        <div className='mt-6 flex flex-col sm:flex-row gap-4 items-center justify-center'>
+          <a href="/signup" className='text-2xl sm:text-3xl px-6 py-2 bg-orange-700 rounded-md hover:bg-orange-800 transition'>
+            Register
+          </a>
+          <a href="/login" className='text-2xl sm:text-3xl px-6 py-2 bg-gray-700 rounded-md hover:bg-gray-800 transition'>
+            Login
+          </a>
+        </div>
       </div>
+    </div>
+  );
+};
 
-      {/* <div className='w-[50%] h-full p-10'>
-       <img src={homeimg} className='rounded-lg h-[500px] w-[500px] ml-5' alt="" />
-      </div> */}
-
-  
-
-    </div>  
-    
-  )
-}
-
-export default Home
+export default Home;
