@@ -259,28 +259,32 @@ const Eventform = () => {
     eventname: "",
     textarea: "",
     date: "",
-    link: "", // image URL
   });
 
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
-  function changeHandler(event) {
-    seteventData((prevFormData) => ({
-      ...prevFormData,
-      [event.target.name]: event.target.value,
+  function changeHandler(e) {
+    seteventData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
     }));
   }
 
-  const handlePosterUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // This will handle image upload and form submission
+  const submitHandler = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return handleError("Please select an image");
+
+    if (!eventData.eventname || !eventData.textarea || !eventData.date) {
+      return handleError("Please fill all event details first");
+    }
 
     const formData = new FormData();
     formData.append("image", file);
 
     try {
-      const res = await axios.post(
+      const uploadRes = await axios.post(
         "https://event-wallah-backend.onrender.com/api/v1/upload-image",
         formData,
         {
@@ -291,50 +295,38 @@ const Eventform = () => {
         }
       );
 
-      const imageUrl = res.data.imageUrl;
-      console.log("Uploaded Image URL:", imageUrl);
+      const imageUrl = uploadRes.data.imageUrl;
+      console.log("Image Uploaded:", imageUrl);
 
-      seteventData((prev) => ({ ...prev, link: imageUrl }));
-      handleSuccess("Image uploaded successfully");
+      // Submit the full event with image link
+      const finalData = {
+        ...eventData,
+        link: imageUrl,
+      };
 
-    } catch (error) {
-      console.error("Image Upload Failed", error);
-      handleError("Image upload failed");
-    }
-  };
+      const res = await axios.post(
+        "https://event-wallah-backend.onrender.com/api/v1/event",
+        finalData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-  const submitHandler = async (event) => {
-    event.preventDefault();
-
-    console.log("Submitting:", eventData);
-
-    if (!eventData.link) return handleError("Please upload an image!");
-
-    if (!eventData.eventname || !eventData.date || !eventData.textarea || !eventData.link) {
-      return handleError("All fields are required!");
-    }
-
-    try {
-      const url = "https://event-wallah-backend.onrender.com/api/v1/event";
-      const response = await axios.post(url, eventData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      const { success, message } = response.data;
+      const { success, message } = res.data;
       if (success) {
         handleSuccess(message);
         setTimeout(() => {
           navigate("/dashboard", {
-            state: { eventData: response?.data?.response || eventData },
+            state: { eventData: res?.data?.response || finalData },
           });
         }, 1000);
       }
     } catch (error) {
-      console.log("Error ", error);
-      handleError(error);
+      console.error("Error during upload or submission", error);
+      handleError("Failed to upload or submit");
     }
   };
   
