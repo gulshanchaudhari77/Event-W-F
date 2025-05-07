@@ -425,7 +425,7 @@ const Eventform = () => {
               <input
                 type="file"
                 accept="image/*"
-                name="image"
+                name="poster"
                 onChange={imageHandler}
                 className="w-full p-2 rounded bg-white mb-4"
               />
