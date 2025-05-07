@@ -328,7 +328,8 @@
         }
       }
     
-      if (!imageUrl) {
+      if (!imageUrl && file)
+        {
         console.log("❌ No image URL after upload");
         handleError("Please upload an image before submitting!");
         return;
@@ -430,7 +431,7 @@
               <input
                 type="file"
                 accept="image/*"
-                name="poster"
+                name="image"
                 onChange={imageHandler}
                 className="w-full p-2 rounded bg-white mb-4"
               />
