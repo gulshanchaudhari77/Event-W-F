@@ -283,19 +283,22 @@
     // Submit handler
     const submitHandler = async (event) => {
       event.preventDefault();
-  
-      const { eventname, textarea, date, link } = eventData;
-  
-      // Upload image if not already uploaded
-      if (!link) {
-        if (!image) {
-          handleError("Please upload an image before submitting!");
-          return;
-        }
-  
+    
+      const file = event.target.image?.files?.[0];
+      const { eventname, textarea, date } = eventData;
+    
+      if (!eventname || !date || !textarea) {
+        handleError("All fields are required!");
+        return;
+      }
+    
+      // Check and upload image
+      let imageUrl = eventData.link; // In case already uploaded
+    
+      if (!imageUrl && file) {
         const formData = new FormData();
-        formData.append("image", image);
-  
+        formData.append("image", file);
+    
         try {
           const res = await axios.post(
             "https://event-wallah-backend.onrender.com/api/v1/upload-image",
@@ -307,59 +310,57 @@
               },
             }
           );
-  
-          if (res.data.success) {
-            const imageUrl = res.data.imageUrl;
-            seteventData((prev) => ({ ...prev, link: imageUrl }));
-            handleSuccess("Image uploaded successfully");
-  
-            // Delay to allow state update, then re-trigger submission
-            setTimeout(() => {
-              submitHandler(event); // Retry submission with uploaded image
-            }, 500);
-  
-            return;
-          } else {
-            handleError("Image upload failed");
-            return;
-          }
+    
+          imageUrl = res.data.imageUrl;
+          handleSuccess("Image uploaded successfully");
         } catch (error) {
-          console.error("Image Upload Error:", error);
+          console.error("Image Upload Failed", error);
           handleError("Image upload failed");
           return;
         }
       }
-  
-      // Validate form fields
-      if (!eventname || !date || !textarea || !link) {
-        handleError("All fields are required!");
+    
+      if (!imageUrl) {
+        handleError("Please upload an image before submitting!");
         return;
       }
-  
-      // Submit event data
+    
+      // Combine form data
+      const updatedEventData = {
+        eventname,
+        textarea,
+        date,
+        link: imageUrl,
+      };
+    
+      // Submit the event
       try {
-        const url = "https://event-wallah-backend.onrender.com/api/v1/event";
-        const response = await axios.post(url, eventData, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-  
+        const response = await axios.post(
+          "https://event-wallah-backend.onrender.com/api/v1/event",
+          updatedEventData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+    
         const { success, message } = response.data;
         if (success) {
           handleSuccess(message);
           setTimeout(() => {
             navigate("/dashboard", {
-              state: { eventData: response?.data?.response || eventData },
+              state: { eventData: response?.data?.response || updatedEventData },
             });
           }, 1000);
         }
       } catch (error) {
         console.log("Submit Error", error);
-        handleError("An error occurred while submitting the event");
+        handleError("Event submission failed");
       }
     };
+    
   
     return (
       <>
