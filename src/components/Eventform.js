@@ -410,7 +410,7 @@ const Eventform = () => {
             />
           </div>
 
-          <button type="submit" disabled={!eventData.link}>Create Event</button>
+          <button type="submit" >Create Event</button>
         </form>
         <ToastContainer />
       </div>
