@@ -375,71 +375,72 @@ const Eventform = () => {
   
     return (
       <>
-        <div className="container bg-transparent px-20 py-6 rounded-lg max-w-[500px] shadow-lg shadow-gray-900 m-auto">
-          <video autoPlay muted loop className="video-background">
-            <source
-              src="https://videos.pexels.com/video-files/2611250/2611250-uhd_2560_1440_30fps.mp4"
-              type="video/mp4"
-            />
-            Your browser does not support the video tag.
-          </video>
-          <form onSubmit={submitHandler}>
-            <h1 className="text-white text-xl font-semibold mb-4">Create Event</h1>
-  
-            <div>
-              <label className="text-white">Event Name</label>
-              <input
-                type="text"
-                placeholder="Enter event name"
-                value={eventData.eventname}
-                name="eventname"
-                onChange={changeHandler}
-                className="w-full p-2 rounded bg-white mb-4"
-              />
-            </div>
-  
-            <div>
-              <label className="text-white">Event Description</label>
-              <textarea
-                className="bg-white w-full p-2 rounded mb-4"
-                placeholder="Enter Description"
-                value={eventData.textarea}
-                name="textarea"
-                onChange={changeHandler}
-              />
-            </div>
-  
-            <div>
-              <label className="text-white">Date</label>
-              <input
-                type="date"
-                value={eventData.date}
-                name="date"
-                onChange={changeHandler}
-                className="w-full p-2 rounded bg-white mb-4"
-              />
-            </div>
-  
-            <div>
-              <label className="text-white">Event Poster (Image)</label>
-              <input
-                type="file"
-                accept="image/*"
-                name="poster"
-                onChange={imageHandler}
-                className="w-full p-2 rounded bg-white mb-4"
-              />
-            </div>
-  
-            <button
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
-            >
-              Create Event
-            </button>
-          </form>
-          <ToastContainer />
-        </div>
+      <div className="container bg-transparent px-4 sm:px-8 md:px-16 lg:px-20 py-6 rounded-lg max-w-[95%] sm:max-w-[600px] shadow-lg shadow-gray-900 m-auto">
+  <video autoPlay muted loop className="video-background absolute top-0 left-0 w-full h-full object-cover -z-10 opacity-40">
+    <source
+      src="https://videos.pexels.com/video-files/2611250/2611250-uhd_2560_1440_30fps.mp4"
+      type="video/mp4"
+    />
+    Your browser does not support the video tag.
+  </video>
+  <form onSubmit={submitHandler}>
+    <h1 className="text-white text-xl font-semibold mb-4 text-center">Create Event</h1>
+
+    <div>
+      <label className="text-white">Event Name</label>
+      <input
+        type="text"
+        placeholder="Enter event name"
+        value={eventData.eventname}
+        name="eventname"
+        onChange={changeHandler}
+        className="w-full p-2 rounded bg-white mb-4"
+      />
+    </div>
+
+    <div>
+      <label className="text-white">Event Description</label>
+      <textarea
+        className="bg-white w-full p-2 rounded mb-4"
+        placeholder="Enter Description"
+        value={eventData.textarea}
+        name="textarea"
+        onChange={changeHandler}
+      />
+    </div>
+
+    <div>
+      <label className="text-white">Date</label>
+      <input
+        type="date"
+        value={eventData.date}
+        name="date"
+        onChange={changeHandler}
+        className="w-full p-2 rounded bg-white mb-4"
+      />
+    </div>
+
+    <div>
+      <label className="text-white">Event Poster (Image)</label>
+      <input
+        type="file"
+        accept="image/*"
+        name="poster"
+        onChange={imageHandler}
+        className="w-full p-2 rounded bg-white mb-4"
+      />
+    </div>
+
+    <button
+      type="submit"
+      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition duration-300"
+    >
+      Create Event
+    </button>
+  </form>
+  <ToastContainer />
+</div>
+
       </>
     );
   };
