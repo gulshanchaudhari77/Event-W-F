@@ -284,20 +284,27 @@
     const submitHandler = async (event) => {
       event.preventDefault();
     
-      const file = event.target.image?.files?.[0];
+      console.log("🔄 Form submitted");
+    
+      const file = event.target.image?.files?.[0]; // From file input
       const { eventname, textarea, date } = eventData;
     
+      // Step 1: Validate required fields
       if (!eventname || !date || !textarea) {
+        console.log("❌ Missing form fields");
         handleError("All fields are required!");
         return;
       }
     
-      // Check and upload image
-      let imageUrl = eventData.link; // In case already uploaded
+      let imageUrl = eventData.link; // existing image link
+      console.log("📷 Initial imageUrl from state:", imageUrl);
     
+      // Step 2: Upload image if not uploaded already
       if (!imageUrl && file) {
         const formData = new FormData();
         formData.append("image", file);
+    
+        console.log("⬆️ Uploading image...");
     
         try {
           const res = await axios.post(
@@ -312,20 +319,22 @@
           );
     
           imageUrl = res.data.imageUrl;
+          console.log("✅ Image uploaded:", imageUrl);
           handleSuccess("Image uploaded successfully");
         } catch (error) {
-          console.error("Image Upload Failed", error);
+          console.error("❌ Image upload failed", error);
           handleError("Image upload failed");
           return;
         }
       }
     
       if (!imageUrl) {
+        console.log("❌ No image URL after upload");
         handleError("Please upload an image before submitting!");
         return;
       }
     
-      // Combine form data
+      // Step 3: Submit the form
       const updatedEventData = {
         eventname,
         textarea,
@@ -333,7 +342,8 @@
         link: imageUrl,
       };
     
-      // Submit the event
+      console.log("📦 Submitting event:", updatedEventData);
+    
       try {
         const response = await axios.post(
           "https://event-wallah-backend.onrender.com/api/v1/event",
@@ -347,16 +357,22 @@
         );
     
         const { success, message } = response.data;
+        console.log("📨 Backend response:", response.data);
+    
         if (success) {
           handleSuccess(message);
+          console.log("✅ Event added. Redirecting to /dashboard...");
           setTimeout(() => {
             navigate("/dashboard", {
               state: { eventData: response?.data?.response || updatedEventData },
             });
           }, 1000);
+        } else {
+          console.log("⚠️ Event creation failed:", response.data);
+          handleError("Failed to create event");
         }
       } catch (error) {
-        console.log("Submit Error", error);
+        console.log("❌ Submit error", error);
         handleError("Event submission failed");
       }
     };
